@@ -140,13 +140,7 @@ const evaluationFormSchema = new Schema(
       remarksAndSuggestion: { type: String, default: "" },
     },
 
-    // Signature is uploaded fresh per submission and stamped on every page of the generated PDF.
-    // Optional — only the guardian signs; there is no student or teacher signature.
-    guardianSignatureUrl: { type: String, default: "" },
-    guardianSignaturePublicId: { type: String, default: "" },
-
-    // Mandatory. Printed in place of the signature image on every page of the
-    // generated PDF whenever the guardian hasn't uploaded a signature.
+    // Mandatory. Printed in the signature slot on every page of the generated PDF.
     filledByName: { type: String, default: "" },
 
     isDeleted: { type: Boolean, default: false },

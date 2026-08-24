@@ -187,7 +187,7 @@ exports.saveDraftForm = async (req, res) => {
       }
     }
 
-    const { student, teacher, training, guardianSignatureUrl, guardianSignaturePublicId, filledByName } = req.body;
+    const { student, teacher, training, filledByName } = req.body;
 
     const update = {
       guardianId: req.guardian._id,
@@ -199,8 +199,6 @@ exports.saveDraftForm = async (req, res) => {
     if (student) update.student = { ...(form ? form.student.toObject() : {}), ...sanitizeStudentEnums(student) };
     if (teacher) update.teacher = { ...(form ? form.teacher.toObject() : {}), ...teacher };
     if (training) update.training = { ...(form ? form.training.toObject() : {}), ...training };
-    if (guardianSignatureUrl !== undefined) update.guardianSignatureUrl = guardianSignatureUrl;
-    if (guardianSignaturePublicId !== undefined) update.guardianSignaturePublicId = guardianSignaturePublicId;
     if (filledByName !== undefined) update.filledByName = filledByName;
 
     if (!form) {
@@ -299,7 +297,6 @@ function findMissingFields(form) {
   if (tr.onlyNeedBeltCertificate === false) req(tr.onlyNeedBeltCertificateSuggestion, "training.onlyNeedBeltCertificateSuggestion");
   req(tr.remarksAndSuggestion, "training.remarksAndSuggestion");
 
-  // guardianSignatureUrl is optional — not required to finalize
   req(form.filledByName, "filledByName");
 
   return missing;

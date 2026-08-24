@@ -138,7 +138,6 @@ const {
   loginGuardian,
   getGuardianProfile,
   updateGuardianProfile,
-  getCloudSignatureUploadSignature,
 } = require("../controller/guardianCtrl");
 const { getDojoInstructorDirectory } = require("../controller/directoryCtrl");
 const { addLearner, getMyLearners, deleteLearner } = require("../controller/learnerCtrl");
@@ -317,7 +316,6 @@ router.post("/guardian/resend-otp", resendGuardianOtp);
 router.post("/guardian/login", loginGuardian);
 router.get("/guardian/profile", guardianAuth, getGuardianProfile);
 router.put("/guardian/profile", guardianAuth, updateGuardianProfile);
-router.post("/guardian/signature/upload-signature", guardianAuth, getCloudSignatureUploadSignature);
 router.get("/guardian/dojo-instructor-directory", guardianAuth, getDojoInstructorDirectory);
 
 // Learner APIs (guardian-owned) ---

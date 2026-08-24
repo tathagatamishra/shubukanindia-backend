@@ -12,7 +12,6 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const allowedOrigins = [
   "http://localhost:3000", // local dev (Next.js default)
-  "http://localhost:1234", // local dev (alt port)
   "https://www.shubukanindia.org", // production frontend
   "https://shubukanindia.vercel.app", // test exam app
 ];

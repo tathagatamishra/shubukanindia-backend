@@ -2,7 +2,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const GuardianModel = require("../model/guardianModel");
-const cloudinary = require("../config/cloudinary");
 const { sendEmail } = require("../util/sendEmail");
 const { guardianOtpEmailTemplate } = require("../util/emailTemplate");
 
@@ -145,25 +144,6 @@ exports.updateGuardianProfile = async (req, res) => {
     ).select("-__v -password -otp -otpExpiresAt");
     if (!updated) return res.status(404).json({ message: "Guardian not found" });
     return res.json(updated);
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-// Cloudinary signature for signature-image upload (used per submission, see evaluationCtrl)
-exports.getCloudSignatureUploadSignature = async (req, res) => {
-  try {
-    const timestamp = Math.round(new Date().getTime() / 1000);
-    const signature = cloudinary.utils.api_sign_request(
-      { timestamp, folder: "Shubukan/GuardianSignature" },
-      process.env.CLOUDINARY_API_SECRET
-    );
-    return res.json({
-      signature,
-      timestamp,
-      apiKey: process.env.CLOUDINARY_API_KEY,
-      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
