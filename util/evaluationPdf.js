@@ -18,19 +18,6 @@ const { L } = require("./evaluationFormLabels");
 const MARGIN = 46;
 const BENGALI_FONT_PATH = path.join(__dirname, "..", "assets", "fonts", "NotoSansBengali-Regular.ttf");
 
-async function fetchImageBuffer(url) {
-  if (!url) return null;
-  try {
-    const response = await fetch(url);
-    if (!response.ok) return null;
-    const arrayBuffer = await response.arrayBuffer();
-    return Buffer.from(arrayBuffer);
-  } catch (err) {
-    console.error("evaluationPdf: failed to fetch image", url, err.message);
-    return null;
-  }
-}
-
 const yn = (v) => (v === true ? "Yes" : v === false ? "No" : "-");
 const val = (v, fallback = "-") => (v === null || v === undefined || v === "" ? fallback : String(v));
 const MODE_LABEL = { daily: "Daily", weekly: "Weekly", monthly: "Monthly", beforeExam: "Only before exam" };
@@ -98,17 +85,11 @@ function instructionLine(doc) {
   doc.moveDown(0.5).fillColor("#000");
 }
 
-// `filledByName` is printed in the signature slot whenever no signature image
-// was uploaded, so the form always shows who filled it in even without a scan.
-function drawFooterSignature(doc, guardianSigBuffer, filledByName) {
+// `filledByName` is printed in the signature slot so the form always shows
+// who filled it in (there is no uploaded signature image).
+function drawFooterSignature(doc, filledByName) {
   const bottomY = doc.page.height - MARGIN - 55;
-  if (guardianSigBuffer) {
-    try {
-      doc.image(guardianSigBuffer, doc.page.width - MARGIN - 150, bottomY - 40, { fit: [150, 40] });
-    } catch (e) {
-      /* ignore malformed image */
-    }
-  } else if (filledByName) {
+  if (filledByName) {
     doc.font("EN-Bold").fontSize(10).fillColor("#3C3A36").text(filledByName, doc.page.width - MARGIN - 170, bottomY - 26, {
       width: 170,
       align: "center",
@@ -130,8 +111,6 @@ function pageHeader(doc, title) {
 function generateEvaluationFormPdf(form) {
   return new Promise(async (resolve, reject) => {
     try {
-      const guardianSig = await fetchImageBuffer(form.guardianSignatureUrl);
-
       const doc = new PDFDocument({ size: "A4", margin: MARGIN, bufferPages: true });
       registerFonts(doc);
 
@@ -176,7 +155,7 @@ function generateEvaluationFormPdf(form) {
             : ""
         }`
       );
-      drawFooterSignature(doc, guardianSig, form.filledByName);
+      drawFooterSignature(doc, form.filledByName);
 
       /* ================= PAGE 2: Sleep & Food (Q8-11) ================= */
       doc.addPage();
@@ -195,7 +174,7 @@ function generateEvaluationFormPdf(form) {
         bilingualField(doc, "q11", tiffins.map((tf) => `No.${tf.no}: ${tf.time}`).join("  "));
       }
       if (s.food?.remarks) bilingualField(doc, "remarksIfAny", s.food.remarks);
-      drawFooterSignature(doc, guardianSig, form.filledByName);
+      drawFooterSignature(doc, form.filledByName);
 
       /* ================= PAGE 3: Physical & Personal (Q12-15) ================= */
       doc.addPage();
@@ -207,7 +186,7 @@ function generateEvaluationFormPdf(form) {
       if (s.hobbyRemarks) bilingualField(doc, "hobbyRemarks", s.hobbyRemarks);
       bilingualField(doc, "q15", null);
       doc.font("EN").fontSize(10).fillColor("#000").text(val(s.karateLearningRemarks), { width: 480 });
-      drawFooterSignature(doc, guardianSig, form.filledByName);
+      drawFooterSignature(doc, form.filledByName);
 
       /* ================= PAGE 4: For the Teacher ================= */
       doc.addPage();
@@ -221,7 +200,7 @@ function generateEvaluationFormPdf(form) {
       bilingualField(doc, "t5", yn(t.honest));
       bilingualField(doc, "t6", null);
       doc.font("EN").fontSize(10).fillColor("#000").text(val(t.remarks), { width: 480 });
-      drawFooterSignature(doc, guardianSig, form.filledByName);
+      drawFooterSignature(doc, form.filledByName);
 
       /* ================= PAGE 5: About Training — Q1, Q2 ================= */
       doc.addPage();
@@ -242,7 +221,7 @@ function generateEvaluationFormPdf(form) {
         bilingualField(doc, "coachName", tr.otherMartialArts.coachName);
         bilingualField(doc, "yearsLearnt", tr.otherMartialArts.yearsLearnt);
       }
-      drawFooterSignature(doc, guardianSig, form.filledByName);
+      drawFooterSignature(doc, form.filledByName);
 
       /* ================= PAGE 6: About Training — Q3, Q4 ================= */
       doc.addPage();
@@ -255,7 +234,7 @@ function generateEvaluationFormPdf(form) {
       if (tr.preferOnlyFitness === true) {
         bilingualField(doc, "suggestIfYes", tr.preferOnlyFitnessSuggestion);
       }
-      drawFooterSignature(doc, guardianSig, form.filledByName);
+      drawFooterSignature(doc, form.filledByName);
 
       /* ================= PAGE 7: About Training — Q5, Q6 + final signatures ================= */
       doc.addPage();
@@ -274,13 +253,7 @@ function generateEvaluationFormPdf(form) {
       const sigY = doc.y;
       const colWidth = 220;
 
-      if (guardianSig) {
-        try {
-          doc.image(guardianSig, MARGIN, sigY, { fit: [colWidth, 40] });
-        } catch (e) {
-          /* ignore */
-        }
-      } else if (form.filledByName) {
+      if (form.filledByName) {
         doc.font("EN-Bold").fontSize(11).fillColor("#3C3A36").text(form.filledByName, MARGIN, sigY + 10, {
           width: colWidth,
           align: "center",
