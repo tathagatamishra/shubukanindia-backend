@@ -112,6 +112,15 @@ const {
   getCloudDojoSignature,
 } = require("../controller/dojoCtrl");
 const {
+  getActiveBanner,
+  fetchAllBanners,
+  createBanner,
+  updateBanner,
+  setActiveBanner,
+  deactivateBanner,
+  deleteBanner,
+} = require("../controller/bannerCtrl");
+const {
   createRegistration,
   getAllRegistrations,
   getRegistration,
@@ -292,6 +301,15 @@ router.get("/dojo", fetchAllDojo);
 router.post("/dojo", authMiddleware, createDojo);
 router.put("/dojo/:id", authMiddleware, updateDojo);
 router.delete("/dojo/:id", authMiddleware, deleteDojo);
+
+// Banner APIs ---
+router.get("/banner/active", getActiveBanner);
+router.get("/admin/banner", authMiddleware, fetchAllBanners);
+router.post("/admin/banner", authMiddleware, createBanner);
+router.put("/admin/banner/:id", authMiddleware, updateBanner);
+router.patch("/admin/banner/:id/activate", authMiddleware, setActiveBanner);
+router.patch("/admin/banner/:id/deactivate", authMiddleware, deactivateBanner);
+router.delete("/admin/banner/:id", authMiddleware, deleteBanner);
 
 // Marksheet APIs ---
 // router.post("/marksheet/signature", authMiddleware, getMarksheetSignature);
