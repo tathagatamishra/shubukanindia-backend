@@ -22,6 +22,12 @@ const bannerSchema = new Schema(
     linkUrl: { type: String, trim: true, default: "/contact" },
     linkText: { type: String, trim: true, default: "www.shubukanindia.org/contact" },
 
+    // Page targeting: when true (default) the banner shows on every page the
+    // site-wide Banner component is mounted on. When false, it only shows on
+    // the paths listed in `pages` (exact match for "/", prefix match otherwise).
+    showOnAllPages: { type: Boolean, default: true },
+    pages: { type: [String], default: [] },
+
     // Only one banner is ever shown on the live site at a time.
     isActive: { type: Boolean, default: false },
 
