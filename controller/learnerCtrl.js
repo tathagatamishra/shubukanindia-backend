@@ -69,6 +69,44 @@ exports.addLearner = async (req, res) => {
   }
 };
 
+// Guardian edits an existing learner's name or dojo+instructor. Only affects
+// this learner's snapshot fields going forward (drafts read live learner data
+// as a fallback); already-submitted forms keep their own frozen snapshot.
+exports.updateLearner = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, dojoId, dojoName, instructorName, instructorCode } = req.body;
+    if (!name || !dojoId || !dojoName || !instructorName) {
+      return res.status(400).json({ message: "name, dojoId, dojoName and instructorName are required" });
+    }
+
+    const learner = await LearnerModel.findOne({ _id: id, guardianId: req.guardian._id, isDeleted: false });
+    if (!learner) return res.status(404).json({ message: "Learner not found" });
+
+    const dojo = await DojoModel.findOne({ _id: dojoId, isDeleted: false });
+    if (!dojo) return res.status(404).json({ message: "Dojo not found" });
+
+    const instructorIdDocs = await InstructorIDModel.find({ isDeleted: false }).lean();
+    let resolvedCode = null;
+    if (instructorCode && instructorIdDocs.some((i) => i.instructorId === instructorCode)) {
+      resolvedCode = instructorCode;
+    } else {
+      resolvedCode = resolveInstructorCode(instructorName, instructorIdDocs);
+    }
+
+    learner.name = name;
+    learner.dojoId = dojoId;
+    learner.dojoName = dojoName;
+    learner.instructorName = instructorName;
+    learner.instructorCode = resolvedCode;
+    await learner.save();
+
+    return res.json({ success: true, data: learner });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.getMyLearners = async (req, res) => {
   try {
     const learners = await LearnerModel.find({ guardianId: req.guardian._id, isDeleted: false }).sort({

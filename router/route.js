@@ -149,10 +149,11 @@ const {
   updateGuardianProfile,
 } = require("../controller/guardianCtrl");
 const { getDojoInstructorDirectory } = require("../controller/directoryCtrl");
-const { addLearner, getMyLearners, deleteLearner } = require("../controller/learnerCtrl");
+const { addLearner, getMyLearners, updateLearner, deleteLearner } = require("../controller/learnerCtrl");
 const {
   createEvaluationWindow,
   getAllEvaluationWindows,
+  updateEvaluationWindow,
   closeEvaluationWindowEarly,
   getActiveWindowsForGuardian,
   saveDraftForm,
@@ -339,11 +340,13 @@ router.get("/guardian/dojo-instructor-directory", guardianAuth, getDojoInstructo
 // Learner APIs (guardian-owned) ---
 router.post("/guardian/learner", guardianAuth, addLearner);
 router.get("/guardian/learner", guardianAuth, getMyLearners);
+router.put("/guardian/learner/:id", guardianAuth, updateLearner);
 router.delete("/guardian/learner/:id", guardianAuth, deleteLearner);
 
 // Evaluation Window APIs (admin schedules the portal) ---
 router.post("/admin/evaluation-window", authMiddleware, createEvaluationWindow);
 router.get("/admin/evaluation-window", authMiddleware, getAllEvaluationWindows);
+router.put("/admin/evaluation-window/:id", authMiddleware, updateEvaluationWindow);
 router.patch("/admin/evaluation-window/:id/close", authMiddleware, closeEvaluationWindowEarly);
 
 // Guardian: fill the Evaluation Form ---

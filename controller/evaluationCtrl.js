@@ -88,6 +88,39 @@ exports.getAllEvaluationWindows = async (req, res) => {
   }
 };
 
+// Admin edits an open window's title, dates, or instructor coverage.
+// Guardians already notified are not re-notified on edit.
+exports.updateEvaluationWindow = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, instructorCodes, startDate, endDate } = req.body;
+    if (!title || !Array.isArray(instructorCodes) || !instructorCodes.length || !startDate || !endDate) {
+      return res.status(400).json({
+        message: "title, instructorCodes (non-empty array), startDate and endDate are required",
+      });
+    }
+    if (new Date(startDate) >= new Date(endDate)) {
+      return res.status(400).json({ message: "startDate must be before endDate" });
+    }
+
+    const window = await EvaluationWindowModel.findOne({ _id: id, isDeleted: false });
+    if (!window) return res.status(404).json({ message: "Window not found" });
+    if (!window.isCurrentlyOpen()) {
+      return res.status(400).json({ message: "Only currently open windows can be edited" });
+    }
+
+    window.title = title;
+    window.instructorCodes = instructorCodes;
+    window.startDate = startDate;
+    window.endDate = endDate;
+    await window.save();
+
+    return res.json({ success: true, data: window });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.closeEvaluationWindowEarly = async (req, res) => {
   try {
     const { id } = req.params;
