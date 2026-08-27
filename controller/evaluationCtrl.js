@@ -172,6 +172,7 @@ exports.getActiveWindowsForGuardian = async (req, res) => {
               learner: l,
               status: f ? f.status : "pending",
               formId: f ? f._id : null,
+              submittedAt: f ? f.submittedAt : null,
             };
           }),
         };
