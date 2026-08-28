@@ -253,85 +253,88 @@ exports.saveDraftForm = async (req, res) => {
   }
 };
 
-// Validates that every mandatory field is filled before allowing finalization
+// Validates that every mandatory field is filled before allowing finalization.
+// The second argument to req() is what the guardian actually sees in the
+// "please fill in ..." error if it's missing — a plain question label, not a
+// dev-facing field path — so keep it human-readable.
 function findMissingFields(form) {
   const missing = [];
   const req = (cond, label) => {
     if (!cond) missing.push(label);
   };
   const s = form.student || {};
-  req(s.name, "student.name");
-  req(s.age !== null && s.age !== undefined, "student.age");
-  req(s.dob, "student.dob");
-  req(s.currentRank, "student.currentRank");
-  req(s.classOf, "student.classOf");
-  req(s.board, "student.board");
-  req(s.studyTime, "student.studyTime");
-  req(s.karatePractice?.mode, "student.karatePractice");
-  req(s.karateNotes?.mode, "student.karateNotes");
-  req(s.otherArtsNames, "student.otherArtsNames");
-  req(s.otherArtsPractice?.mode, "student.otherArtsPractice");
-  req(s.physicalExerciseTime, "student.physicalExerciseTime");
-  req(s.screenDevice?.used !== null && s.screenDevice?.used !== undefined, "student.screenDevice.used");
-  if (s.screenDevice?.used) req(s.screenDevice?.mode, "student.screenDevice.mode");
-  req(s.sleep?.totalDuration, "student.sleep.totalDuration");
-  req(s.sleep?.bedTime, "student.sleep.bedTime");
-  // student.sleep.afternoonSleep is optional
-  req(s.food?.type, "student.food.type");
-  req(s.food?.times?.breakfast, "student.food.times.breakfast");
-  req(s.food?.times?.lunch, "student.food.times.lunch");
-  req(s.food?.times?.afternoonSnacks, "student.food.times.afternoonSnacks");
-  req(s.food?.times?.dinner, "student.food.times.dinner");
-  req(s.height !== null && s.height !== undefined, "student.height");
-  req(s.weight !== null && s.weight !== undefined, "student.weight");
-  req(s.sportPerformance, "student.sportPerformance");
-  req(s.hobby, "student.hobby");
-  req(s.karateLearningRemarks, "student.karateLearningRemarks");
+  req(s.name, "Student Name");
+  req(s.age !== null && s.age !== undefined, "Age");
+  req(s.dob, "Date of Birth");
+  req(s.currentRank, "Student's Current Rank");
+  req(s.classOf, "Class");
+  req(s.board, "Board");
+  req(s.studyTime, "Study Time");
+  req(s.karatePractice?.mode, "Karate Practice Time");
+  req(s.karateNotes?.mode, "Karate Notes/Theory Studies");
+  req(s.otherArtsNames, "Other Arts Practiced (names)");
+  req(s.otherArtsPractice?.mode, "Other Arts Practice Time");
+  req(s.physicalExerciseTime, "Physical Exercise Time");
+  req(s.screenDevice?.used !== null && s.screenDevice?.used !== undefined, "Screen Device Usage");
+  if (s.screenDevice?.used) req(s.screenDevice?.mode, "Screen Device — How Often");
+  req(s.sleep?.totalDuration, "Sleep Duration");
+  req(s.sleep?.bedTime, "Bed Time");
+  // afternoon sleep is optional
+  req(s.food?.type, "Food Type (Veg/Non-Veg)");
+  req(s.food?.times?.breakfast, "Breakfast Time");
+  req(s.food?.times?.lunch, "Lunch Time");
+  req(s.food?.times?.afternoonSnacks, "Afternoon Snacks Time");
+  req(s.food?.times?.dinner, "Dinner Time");
+  req(s.height !== null && s.height !== undefined, "Height");
+  req(s.weight !== null && s.weight !== undefined, "Weight");
+  req(s.sportPerformance, "Sport Performance");
+  req(s.hobby, "Hobby");
+  req(s.karateLearningRemarks, "Remarks on Karate Learning");
 
   const t = form.teacher || {};
-  req(t.punctual !== null && t.punctual !== undefined, "teacher.punctual");
-  req(t.attentionToEachStudent !== null && t.attentionToEachStudent !== undefined, "teacher.attentionToEachStudent");
-  req(t.hardWorking !== null && t.hardWorking !== undefined, "teacher.hardWorking");
-  req(t.goodTrainingAreas && t.goodTrainingAreas.length, "teacher.goodTrainingAreas");
-  req(t.honest !== null && t.honest !== undefined, "teacher.honest");
-  req(t.remarks, "teacher.remarks");
+  req(t.punctual !== null && t.punctual !== undefined, "Is Teacher Punctual");
+  req(t.attentionToEachStudent !== null && t.attentionToEachStudent !== undefined, "Teacher's Attention to Each Student");
+  req(t.hardWorking !== null && t.hardWorking !== undefined, "Teacher's Hard Work in Teaching");
+  req(t.goodTrainingAreas && t.goodTrainingAreas.length, "What Teacher Trains Well");
+  req(t.honest !== null && t.honest !== undefined, "Is Teacher Honest");
+  req(t.remarks, "Remarks About Teacher");
 
   const tr = form.training || {};
-  req(tr.trainingNeeded && tr.trainingNeeded.length, "training.trainingNeeded");
+  req(tr.trainingNeeded && tr.trainingNeeded.length, "Which Training You Need");
   req(
     tr.studiedSportKarateBefore?.answer !== null && tr.studiedSportKarateBefore?.answer !== undefined,
-    "training.studiedSportKarateBefore.answer"
+    "Studied Sport Karate Before"
   );
   if (tr.studiedSportKarateBefore?.answer) {
-    req(tr.studiedSportKarateBefore?.styleName, "training.studiedSportKarateBefore.styleName");
-    req(tr.studiedSportKarateBefore?.coachName, "training.studiedSportKarateBefore.coachName");
-    req(tr.studiedSportKarateBefore?.yearsLearnt, "training.studiedSportKarateBefore.yearsLearnt");
+    req(tr.studiedSportKarateBefore?.styleName, "Style Name (Sport Karate)");
+    req(tr.studiedSportKarateBefore?.coachName, "Coach Name (Sport Karate)");
+    req(tr.studiedSportKarateBefore?.yearsLearnt, "Years Learnt (Sport Karate)");
   }
   req(
     tr.newInTraditionalFullContact !== null && tr.newInTraditionalFullContact !== undefined,
-    "training.newInTraditionalFullContact"
+    "New in Traditional Full Contact Karate"
   );
-  req(tr.otherMartialArts?.answer !== null && tr.otherMartialArts?.answer !== undefined, "training.otherMartialArts.answer");
+  req(tr.otherMartialArts?.answer !== null && tr.otherMartialArts?.answer !== undefined, "Any Other Martial Arts Practiced");
   if (tr.otherMartialArts?.answer) {
-    req(tr.otherMartialArts?.styleName, "training.otherMartialArts.styleName");
-    req(tr.otherMartialArts?.coachName, "training.otherMartialArts.coachName");
-    req(tr.otherMartialArts?.yearsLearnt, "training.otherMartialArts.yearsLearnt");
+    req(tr.otherMartialArts?.styleName, "Style Name (Other Martial Arts)");
+    req(tr.otherMartialArts?.coachName, "Coach Name (Other Martial Arts)");
+    req(tr.otherMartialArts?.yearsLearnt, "Years Learnt (Other Martial Arts)");
   }
   req(
     tr.preferScientificEffectiveLesson !== null && tr.preferScientificEffectiveLesson !== undefined,
-    "training.preferScientificEffectiveLesson"
+    "Prefer Scientific, Effective Lessons"
   );
-  if (tr.preferScientificEffectiveLesson === false) req(tr.preferScientificSuggestion, "training.preferScientificSuggestion");
-  req(tr.preferOnlyFitness !== null && tr.preferOnlyFitness !== undefined, "training.preferOnlyFitness");
-  if (tr.preferOnlyFitness === true) req(tr.preferOnlyFitnessSuggestion, "training.preferOnlyFitnessSuggestion");
+  if (tr.preferScientificEffectiveLesson === false) req(tr.preferScientificSuggestion, "Suggestion (Scientific Lessons)");
+  req(tr.preferOnlyFitness !== null && tr.preferOnlyFitness !== undefined, "Prefer Only a Fitness Programme");
+  if (tr.preferOnlyFitness === true) req(tr.preferOnlyFitnessSuggestion, "Suggestion (Fitness Programme)");
   req(
     tr.onlyNeedBeltCertificate !== null && tr.onlyNeedBeltCertificate !== undefined,
-    "training.onlyNeedBeltCertificate"
+    "Only Need Belt & Certificate"
   );
-  if (tr.onlyNeedBeltCertificate === false) req(tr.onlyNeedBeltCertificateSuggestion, "training.onlyNeedBeltCertificateSuggestion");
-  req(tr.remarksAndSuggestion, "training.remarksAndSuggestion");
+  if (tr.onlyNeedBeltCertificate === false) req(tr.onlyNeedBeltCertificateSuggestion, "Suggestion (Belt & Certificate)");
+  req(tr.remarksAndSuggestion, "Remarks & Suggestion (Training)");
 
-  req(form.filledByName, "filledByName");
+  req(form.filledByName, "Guardian's Name (Signature)");
 
   return missing;
 }
